@@ -8,6 +8,22 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 
+def load_data(data_file):
+    # read in file
+
+
+    # clean data
+
+
+    # load to database
+
+
+    # define features and label arrays
+
+
+    return X, y
+
+
 def load_data(database_filepath, table_name):
     """."""
     engine = create_engine(database_filepath)
@@ -31,8 +47,26 @@ def tokenize(text):
     return word_tokenize(text.lower())
 
 
+def train(X, y, model):
+    # train test split
+
+
+    # fit model
+
+
+    # output model test results
+
+
+    return model
+
 def build_model():
-    pass
+    # text processing and model pipeline
+
+    # define parameters for GridSearchCV
+
+    # create gridsearch object and return as final model pipeline
+
+    return model_pipeline
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
@@ -40,7 +74,17 @@ def evaluate_model(model, X_test, Y_test, category_names):
 
 
 def save_model(model, model_filepath):
-    pass
+    # Export model as a pickle file
+
+    def run_pipeline(data_file):
+        X, y = load_data(data_file)  # run ETL pipeline
+        model = build_model()  # build model pipeline
+        model = train(X, y, model)  # train model pipeline
+        export_model(model)  # save model
+
+    if __name__ == '__main__':
+        data_file = sys.argv[1]  # get filename of dataset
+        run_pipeline(data_file)  # run data pipeline
 
 
 def main():
