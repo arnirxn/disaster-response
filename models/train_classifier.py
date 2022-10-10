@@ -1,26 +1,25 @@
 """A ML pipeline that outputs a model to classify the message into categories."""
 
+import pickle
+import sys
+
 import nltk
+import pandas as pd
 
 nltk.download('punkt')
 nltk.download('wordnet')
 nltk.download('omw-1.4')
 
-from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
-import pandas as pd
-from sqlalchemy import create_engine
-
-import sys
-
-from sklearn.metrics import classification_report
-from sklearn.model_selection import train_test_split
-from sklearn.model_selection import GridSearchCV
-from sklearn.multioutput import MultiOutputClassifier
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.pipeline import Pipeline
+from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
-import pickle
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import train_test_split
+from sklearn.multioutput import MultiOutputClassifier
+from sklearn.pipeline import Pipeline
+from sqlalchemy import create_engine
 
 
 def load_data(database_filepath):
