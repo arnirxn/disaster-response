@@ -66,7 +66,7 @@ def save_data(df, database_filepath):
     engine = create_engine(f'sqlite:///{database_filepath}')
 
     # write to local sqlite databse
-    df.to_sql("messages_categories", engine, index=False)
+    df.to_sql("messages_categories", engine, index=False, if_exists='replace')
 
 
 def main():
