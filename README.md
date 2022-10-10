@@ -1,7 +1,7 @@
 # disaster-response
 A pipeline to classify disaster response messages
 
-# Project Components
+## Project Components
 ### 1. ETL Pipeline
 A Python script, process_data.py, that:
 - Loads the messages and categories datasets
