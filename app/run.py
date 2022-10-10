@@ -2,6 +2,7 @@
 
 import json
 
+import joblib
 import pandas as pd
 import plotly
 from flask import Flask
@@ -9,7 +10,6 @@ from flask import render_template, request
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from plotly.graph_objs import Bar
-from sklearn.externals import joblib
 from sqlalchemy import create_engine
 
 app = Flask(__name__)
@@ -40,28 +40,36 @@ model = joblib.load("../models/classifier.pkl")
 @app.route('/index')
 def index():
     # extract data needed for visuals
-    # TODO: Below is an example - modify to extract data for your own visuals
-    genre_counts = df.groupby('genre').count()['message']
-    genre_names = list(genre_counts.index)
+    top_10_categories = df.iloc[:, 4:].sum().sort_values(ascending=False)[:10]
+    categories_per_message = df.iloc[:, 4:].sum(axis=1).value_counts().sort_index()
 
     # create visuals
-    # TODO: Below is an example - modify to create your own visuals
     graphs = [
         {
             'data': [
-                Bar(
-                    x=genre_names,
-                    y=genre_counts
-                )
+                Bar(x=top_10_categories.index, y=top_10_categories)
             ],
-
             'layout': {
-                'title': 'Distribution of Message Genres',
+                'title': 'Top 10 message categories',
                 'yaxis': {
-                    'title': "Count"
+                    'title': "Number of messages"
                 },
                 'xaxis': {
-                    'title': "Genre"
+                    'title': "Category"
+                }
+            }
+        },
+        {
+            'data': [
+                Bar(x=categories_per_message.index, y=categories_per_message)
+            ],
+            'layout': {
+                'title': 'Number of categories per message',
+                'yaxis': {
+                    'title': "Number of messages"
+                },
+                'xaxis': {
+                    'title': "Number of categories"
                 }
             }
         }
