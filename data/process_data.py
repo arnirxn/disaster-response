@@ -1,19 +1,24 @@
 """An ETL pipeline that reads the dataset, cleans it, and then stores it in a SQLite database."""
 
+import sys
+
 import pandas as pd
 from sqlalchemy import create_engine
 
 
 def load_data(messages_filepath, categories_filepath):
-    """."""
+    """Load datasets and return merged dataset with duplicates removed."""
     # load messages dataset
-    messages = pd.read_csv("messages.csv")
+    messages = pd.read_csv(messages_filepath)
 
     # load categories dataset
-    categories = pd.read_csv("categories.csv")
+    categories = pd.read_csv(categories_filepath)
 
     # merge datasets
     df = pd.merge(messages, categories, on="id")
+
+    # drop duplicates
+    df.drop_duplicates(inplace=True)
 
     return df
 
