@@ -8,6 +8,7 @@ from sqlalchemy import create_engine
 
 def load_data(messages_filepath, categories_filepath):
     """Load datasets and return merged dataset with duplicates removed."""
+
     # load messages dataset
     messages = pd.read_csv(messages_filepath)
 
@@ -24,9 +25,10 @@ def load_data(messages_filepath, categories_filepath):
 
 
 def clean_data(df):
-    """."""
+    """Clean dataframe and return dataframe with categories split into columns."""
+
     # create a dataframe of the 36 individual category columns
-    categories = categories["categories"].str.split(";", expand=True)
+    categories = df["categories"].str.split(";", expand=True)
 
     # select the first row of the categories dataframe
     row = categories.iloc[0]
@@ -48,17 +50,23 @@ def clean_data(df):
     # concatenate the original dataframe with the new `categories` dataframe
     df = pd.concat([df, categories], axis=1)
 
+    # replace 2 with 1 in related column
+    df["related"].replace(2, 1, inplace=True)
+
     # drop duplicates
     df.drop_duplicates(inplace=True)
 
     return df
 
 
-def save_data(df, database_filename):
-    """."""
-    # save the clean dataset into an sqlite database
-    engine = create_engine('sqlite:///mydatabase.db')
-    df.to_sql('mytable', engine, index=False)
+def save_data(df, database_filepath):
+    """Write the dataframe as a table to a sqlite database."""
+
+    # create engine
+    engine = create_engine(f'sqlite:///{database_filepath}')
+
+    # write to local sqlite databse
+    df.to_sql("messages_categories", engine, index=False)
 
 
 def main():
