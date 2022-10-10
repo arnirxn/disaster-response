@@ -3,6 +3,9 @@
 import nltk
 
 nltk.download('punkt')
+nltk.download('wordnet')
+nltk.download('omw-1.4')
+
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 import pandas as pd
@@ -29,8 +32,6 @@ def load_data(database_filepath):
     # read in dataframe
     df = pd.read_sql_table('messages_categories', engine)
 
-    df = df.iloc[:1000]  # TODO remove line
-
     # define features and label arrays
     X = df["message"].values
     Y = df.iloc[:, 4:].values
@@ -44,31 +45,11 @@ def load_data(database_filepath):
 
 def tokenize(text):
     """Tokenize string of text and return tokenized words."""
-    # return word_tokenize(text.lower())
+
     lemmatizer = WordNetLemmatizer()
-    tokens = word_tokenize(text)
+    tokens = word_tokenize(text.lower())
 
-    return word_tokenize(text)
-    # # For each token: lemmatize, normalize case, and strip leading and trailing white space. Return the tokens in a list!
-    # tokens = word_tokenize(text)
-    # lemmatizer = WordNetLemmatizer()
-    # clean_tokens = []
-    # for tok in tokens:
-    #     clean_tok = lemmatizer.lemmatize(tok).lower().strip()
-    #     clean_tokens.append(clean_tok)
-    #
-    # return word_tokenize(text.lower())
-
-
-#
-# def train(X, y, model):
-#     # train test split
-#
-#     # fit model
-#
-#     # output model test results
-#
-#     return model
+    return [lemmatizer.lemmatize(t).strip() for t in tokens]
 
 
 def build_model():
@@ -82,14 +63,10 @@ def build_model():
         )),
         ('tifd', TfidfTransformer()),
         ('clf', MultiOutputClassifier(RandomForestClassifier(random_state=85055))),
-        #     ('clf',  MultiOutputClassifier(MultinomialNB())),
-        #     ('clf',  MultiOutputClassifier(LogisticRegression())),
-        # ('clf', MultiOutputClassifier(SVC())),
     ])
 
     # define parameters for grid search
     parameters = {
-        # 'vect__max_df': (0.5, 0.75, 1.0),
         'tifd__use_idf': [True, False],
         'clf__estimator__n_estimators': [10, 100],
     }
@@ -97,8 +74,7 @@ def build_model():
     # create gridsearch object and return as final model pipeline
     cv = GridSearchCV(pipeline, param_grid=parameters)
 
-    # return cv
-    return pipeline
+    return cv
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
