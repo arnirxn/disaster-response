@@ -4,86 +4,113 @@ import nltk
 
 nltk.download('punkt')
 from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer
 import pandas as pd
 from sqlalchemy import create_engine
 
+import sys
+
+from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GridSearchCV
+from sklearn.multioutput import MultiOutputClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.pipeline import Pipeline
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+import pickle
 
 
 def load_data(database_filepath):
-    """."""
-    # read in file
+    """Load data from sqlite database and return ."""
 
-    # clean data
+    # create slqlite engine
+    engine = create_engine(f'sqlite:///{database_filepath}')
 
-    # load to database
+    # read in dataframe
+    df = pd.read_sql_table('messages_categories', engine)
+
+    df = df.iloc[:1000]  # TODO remove line
 
     # define features and label arrays
-
-    return X, Y
-
-
-def load_data(database_filepath, table_name):
-    """."""
-    engine = create_engine(database_filepath)
-    df = pd.read_sql_table(table_name, engine)
     X = df["message"].values
-    y = df.iloc[:, 5:]
+    Y = df.iloc[:, 4:].values
+    category_names = df.columns[4:]
 
-    return X, y
+    # check that Y contains 36 categories
+    assert Y.shape[1] == len(category_names) == 36, "Y does not contain 36 categories"
+
+    return X, Y, category_names
 
 
 def tokenize(text):
-    """."""
-    # For each token: lemmatize, normalize case, and strip leading and trailing white space. Return the tokens in a list!
-    tokens = word_tokenize(text)
+    """Tokenize string of text and return tokenized words."""
+    # return word_tokenize(text.lower())
     lemmatizer = WordNetLemmatizer()
-    clean_tokens = []
-    for tok in tokens:
-        clean_tok = lemmatizer.lemmatize(tok).lower().strip()
-        clean_tokens.append(clean_tok)
+    tokens = word_tokenize(text)
 
-    return word_tokenize(text.lower())
-
-
-def train(X, y, model):
-    # train test split
-
-
-    # fit model
-
-
-    # output model test results
+    return word_tokenize(text)
+    # # For each token: lemmatize, normalize case, and strip leading and trailing white space. Return the tokens in a list!
+    # tokens = word_tokenize(text)
+    # lemmatizer = WordNetLemmatizer()
+    # clean_tokens = []
+    # for tok in tokens:
+    #     clean_tok = lemmatizer.lemmatize(tok).lower().strip()
+    #     clean_tokens.append(clean_tok)
+    #
+    # return word_tokenize(text.lower())
 
 
-    return model
+#
+# def train(X, y, model):
+#     # train test split
+#
+#     # fit model
+#
+#     # output model test results
+#
+#     return model
+
 
 def build_model():
+    """Build model pipeline and return gridsearch object."""
     # text processing and model pipeline
+    pipeline = Pipeline([
+        ('vect', CountVectorizer(
+            strip_accents="unicode",
+            analyzer="word",
+            tokenizer=tokenize
+        )),
+        ('tifd', TfidfTransformer()),
+        ('clf', MultiOutputClassifier(RandomForestClassifier(random_state=85055))),
+        #     ('clf',  MultiOutputClassifier(MultinomialNB())),
+        #     ('clf',  MultiOutputClassifier(LogisticRegression())),
+        # ('clf', MultiOutputClassifier(SVC())),
+    ])
 
-    # define parameters for GridSearchCV
+    # define parameters for grid search
+    parameters = {
+        # 'vect__max_df': (0.5, 0.75, 1.0),
+        'tifd__use_idf': [True, False],
+        'clf__estimator__n_estimators': [10, 100],
+    }
 
     # create gridsearch object and return as final model pipeline
+    cv = GridSearchCV(pipeline, param_grid=parameters)
 
-    return model_pipeline
+    # return cv
+    return pipeline
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    pass
+    """Predict Y test array and print classification report."""
+    Y_pred = model.predict(X_test)
+    print(classification_report(Y_test, Y_pred, target_names=category_names))
 
 
 def save_model(model, model_filepath):
-    # Export model as a pickle file
-
-    def run_pipeline(data_file):
-        X, y = load_data(data_file)  # run ETL pipeline
-        model = build_model()  # build model pipeline
-        model = train(X, y, model)  # train model pipeline
-        export_model(model)  # save model
-
-    if __name__ == '__main__':
-        data_file = sys.argv[1]  # get filename of dataset
-        run_pipeline(data_file)  # run data pipeline
+    """Export model as a pickle file."""
+    # pickle.dump(model.best_estimator_, open(model_filepath, 'wb'))
+    pickle.dump(model, open(model_filepath, 'wb'))
 
 
 def main():
@@ -91,7 +118,7 @@ def main():
         database_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n    DATABASE: {}'.format(database_filepath))
         X, Y, category_names = load_data(database_filepath)
-        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
+        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=85055)
 
         print('Building model...')
         model = build_model()
