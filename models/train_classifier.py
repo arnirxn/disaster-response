@@ -1,14 +1,34 @@
 """A ML pipeline that outputs a model to classify the message into categories."""
 
-import sys
+import nltk
+nltk.download('punkt')
+from nltk.stem import WordNetLemmatizer
+from nltk.tokenize import word_tokenize
+import pandas as pd
+from sqlalchemy import create_engine
 
 
-def load_data(database_filepath):
-    pass
+def load_data(database_filepath, table_name):
+    """."""
+    engine = create_engine(database_filepath)
+    df = pd.read_sql_table(table_name, engine)
+    X = df["message"].values
+    y = df.iloc[:, 5:]
+
+    return X, y
 
 
 def tokenize(text):
-    pass
+    """."""
+    # For each token: lemmatize, normalize case, and strip leading and trailing white space. Return the tokens in a list!
+    tokens = word_tokenize(text)
+    lemmatizer = WordNetLemmatizer()
+    clean_tokens = []
+    for tok in tokens:
+        clean_tok = lemmatizer.lemmatize(tok).lower().strip()
+        clean_tokens.append(clean_tok)
+
+    return word_tokenize(text.lower())
 
 
 def build_model():
