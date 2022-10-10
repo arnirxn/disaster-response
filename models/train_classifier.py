@@ -6,9 +6,9 @@ import sys
 import nltk
 import pandas as pd
 
-nltk.download('punkt')
-nltk.download('wordnet')
-nltk.download('omw-1.4')
+nltk.download("punkt")
+nltk.download("wordnet")
+nltk.download("omw-1.4")
 
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
@@ -26,10 +26,10 @@ def load_data(database_filepath):
     """Load data from sqlite database and return ."""
 
     # create slqlite engine
-    engine = create_engine(f'sqlite:///{database_filepath}')
+    engine = create_engine(f"sqlite:///{database_filepath}")
 
     # read in dataframe
-    df = pd.read_sql_table('messages_categories', engine)
+    df = pd.read_sql_table("messages_categories", engine)
 
     # define features and label arrays
     X = df["message"].values
@@ -54,20 +54,23 @@ def tokenize(text):
 def build_model():
     """Build model pipeline and return gridsearch object."""
     # text processing and model pipeline
-    pipeline = Pipeline([
-        ('vect', CountVectorizer(
-            strip_accents="unicode",
-            analyzer="word",
-            tokenizer=tokenize
-        )),
-        ('tifd', TfidfTransformer()),
-        ('clf', MultiOutputClassifier(RandomForestClassifier(random_state=85055))),
-    ])
+    pipeline = Pipeline(
+        [
+            (
+                "vect",
+                CountVectorizer(
+                    strip_accents="unicode", analyzer="word", tokenizer=tokenize
+                ),
+            ),
+            ("tifd", TfidfTransformer()),
+            ("clf", MultiOutputClassifier(RandomForestClassifier(random_state=85055))),
+        ]
+    )
 
     # define parameters for grid search
     parameters = {
-        'tifd__use_idf': [True, False],
-        'clf__estimator__n_estimators': [10, 100],
+        "tifd__use_idf": [True, False],
+        "clf__estimator__n_estimators": [10, 100],
     }
 
     # create gridsearch object and return as final model pipeline
@@ -85,36 +88,40 @@ def evaluate_model(model, X_test, Y_test, category_names):
 def save_model(model, model_filepath):
     """Export model as a pickle file."""
     # pickle.dump(model.best_estimator_, open(model_filepath, 'wb'))
-    pickle.dump(model, open(model_filepath, 'wb'))
+    pickle.dump(model, open(model_filepath, "wb"))
 
 
 def main():
     if len(sys.argv) == 3:
         database_filepath, model_filepath = sys.argv[1:]
-        print('Loading data...\n    DATABASE: {}'.format(database_filepath))
+        print("Loading data...\n    DATABASE: {}".format(database_filepath))
         X, Y, category_names = load_data(database_filepath)
-        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=85055)
+        X_train, X_test, Y_train, Y_test = train_test_split(
+            X, Y, test_size=0.2, random_state=85055
+        )
 
-        print('Building model...')
+        print("Building model...")
         model = build_model()
 
-        print('Training model...')
+        print("Training model...")
         model.fit(X_train, Y_train)
 
-        print('Evaluating model...')
+        print("Evaluating model...")
         evaluate_model(model, X_test, Y_test, category_names)
 
-        print('Saving model...\n    MODEL: {}'.format(model_filepath))
+        print("Saving model...\n    MODEL: {}".format(model_filepath))
         save_model(model, model_filepath)
 
-        print('Trained model saved!')
+        print("Trained model saved!")
 
     else:
-        print('Please provide the filepath of the disaster messages database ' \
-              'as the first argument and the filepath of the pickle file to ' \
-              'save the model to as the second argument. \n\nExample: python ' \
-              'train_classifier.py ../data/DisasterResponse.db classifier.pkl')
+        print(
+            "Please provide the filepath of the disaster messages database "
+            "as the first argument and the filepath of the pickle file to "
+            "save the model to as the second argument. \n\nExample: python "
+            "train_classifier.py ../data/DisasterResponse.db classifier.pkl"
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
