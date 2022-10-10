@@ -1,27 +1,26 @@
 """A ML pipeline that outputs a model to classify the message into categories."""
 
 import nltk
+
 nltk.download('punkt')
-from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 import pandas as pd
 from sqlalchemy import create_engine
 
+from sklearn.model_selection import train_test_split
 
-def load_data(data_file):
+
+def load_data(database_filepath):
+    """."""
     # read in file
-
 
     # clean data
 
-
     # load to database
-
 
     # define features and label arrays
 
-
-    return X, y
+    return X, Y
 
 
 def load_data(database_filepath, table_name):
