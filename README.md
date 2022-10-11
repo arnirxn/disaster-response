@@ -48,7 +48,7 @@ python train_classifier.py ../data/DisasterResponse.db classifier.pkl
 
 python run.py
 
-## File structure
+## Files in the repository
 
 - app
   - template
