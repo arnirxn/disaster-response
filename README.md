@@ -1,4 +1,4 @@
-# disaster-response
+# Disaster Response Pipeline
 
 A pipeline to classify disaster response messages
 
